@@ -1,0 +1,49 @@
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+int sum[4] = {0}; // 0으로 초기화된 전역 배열
+
+void* runner(void* param) {
+    int from = atoi((char*)param);
+    int to = from + 9999;
+    int index = from / 10000;
+
+    for (int i = from; i <= to; i++) {
+        sum[index] += i;
+    }
+
+    pthread_exit(0);
+}
+
+int main() {
+    pthread_t tid[4];  // 스레드 ID 배열
+    pthread_attr_t attr[4]; // 스레드 속성
+    void* status = NULL;
+    
+    char* args[4] = {"1", "10001", "20001", "30001"}; // 스레드 전달 인자
+
+    // 스레드 속성 초기화
+    for (int i = 0; i < 4; i++) {
+        pthread_attr_init(&attr[i]);
+    }
+
+    // 스레드 생성
+    for (int i = 0; i < 4; i++) {
+        pthread_create(&tid[i], &attr[i], runner, args[i]);
+    }
+
+    // 스레드 종료 대기
+    for (int i = 0; i < 4; i++) {
+        pthread_join(tid[i], &status);
+    }
+
+    // 최종 합 계산 및 출력
+    int total = 0;
+    for (int i = 0; i < 4; i++) {
+        total += sum[i];
+    }
+
+    printf("1에서 40000까지의 합: %d\n", total);
+    return 0;
+}
